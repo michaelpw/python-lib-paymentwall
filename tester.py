@@ -1,19 +1,16 @@
-a = ''
-if not a:
-    print('a is empty')
+import requests
+import json
 
-b = {'captured': False}
-if b['captured']:
-    print('Hey!')
+url = 'https://api.paymentwall.com/api/brick/token'
+data_request = {
+    'public_key': 'YOUR_PUBLIC_KEY',
+    'card[number]':'4242424242424242',
+    'card[exp_month]':'11',
+    'card[exp_year]':'21',
+    'card[cvv]':'123',
+}
+#headers = {'X-ApiKey': 'YOUR_PRIVATE_KEY'}
 
-a = 'charge'
-b = ''
-c = ''
-d = (a,b,c)
-print(d)
-for obj in d:
-    if obj:
-        print(obj)
-        break
-else:
-    print("No object found")
+r = requests.post(url, data=data_request) # send post request
+response = json.loads(r.text) # get response in json
+print(response)

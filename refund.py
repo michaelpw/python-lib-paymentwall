@@ -5,19 +5,13 @@ except ImportError:
 import urllib.parse
 import json
 
-url = 'https://api.paymentwall.com/api/brick/token'
-data_request = {
-    'public_key': 't_5e62bbff32d16a2dfb0dff0c496be9',
-    'card[number]':'4242424242424242',
-    'card[exp_month]':'11',
-    'card[exp_year]':'21',
-    'card[cvv]':'123'
-}
-#headers = {'X-ApiKey': 'YOUR_PRIVATE_KEY'}
+url = 'https://api.paymentwall.com/api/brick/charge/39081509375792_test/refund'
+data_request = {}
+headers = {'X-ApiKey': 't_b741b48268a12e89f9b4a349958ff8'}
 
 data_request = urllib.parse.urlencode(data_request)
 data_request = urllib.parse.unquote_to_bytes(data_request)
-re = urllib_request.Request(url, data=data_request)
+re = urllib_request.Request(url, data=data_request, headers=headers)
 r = urllib_request.urlopen(re)
 print(r.getcode())
 print(r.geturl())

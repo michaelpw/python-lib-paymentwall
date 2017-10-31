@@ -9,16 +9,15 @@ class ApiObject(Paymentwall, Httpaction):
     API_OBJECT_ONE_TIME_TOKEN = 'token'
     BRICK_ENDPOINTS = (API_OBJECT_CHARGE, API_OBJECT_SUBSCRIPTION, API_OBJECT_ONE_TIME_TOKEN)
 
-    my_id = ''
     json_response = {}
 
     def __init__(self, id='', obj=''):
-        self.my_id = id
+        self.id = id
         self.obj = obj
 
     def get_endpoint_name(self):
-        if self.obj:
-            return self.API_OBJECT_CHARGE if self.obj == 'charge' else self.obj == 'subscription'
+        if self.obj and self.obj in self.BRICK_ENDPOINTS:
+            return self.obj
         else:
             return ''
 
@@ -26,7 +25,7 @@ class ApiObject(Paymentwall, Httpaction):
         return self.BASE + '/' + self.API_BRICK_SUBPATH + '/' + self.get_endpoint_name()
 
     def get_api_header(self):
-        return {'X-ApiKey': self.get_secret_key()} if not self.API_OBJECT_ONE_TIME_TOKEN else {}
+        return {'X-ApiKey': self.get_secret_key()} if self.obj != 'token' else {}
 
     def build_query(self, params):
         query = ''
@@ -34,12 +33,12 @@ class ApiObject(Paymentwall, Httpaction):
             query = query + '&' + key + '=' + value
         return query
 
-    def convert_response(self, resp):
-        raw_response = resp.decode('utf-8')
+    def convert_response(self, response):
+        raw_response = response.decode('utf-8')
         return json.loads(raw_response)
 
     def do_api_action(self, action='', params={}, method='POST'):
-        action_url = self.get_api_url() + self.id + action
+        action_url = self.get_api_url() + '/' + self.id + '/' + action
         http_action = Httpaction(action_url, params=params, header=self.get_api_header()) if method == 'POST' else Httpaction(action_url + self.build_query(params), params={}, header={})
         response = http_action.api_request().read()
         self.set_response(self.convert_response(response))
@@ -57,7 +56,7 @@ class ApiObject(Paymentwall, Httpaction):
     def get_public_data(self):
         response = self.get_response()
         result = {}
-        if response['type'] and response['type'] == 'Error':
+        if 'type' in response and response['type'] == 'Error':
             result = {
                 'success': 0,
                 'error': {
@@ -65,12 +64,12 @@ class ApiObject(Paymentwall, Httpaction):
                     'code': response['code']
                 }
             }
-        elif response['secure']:
+        elif 'secure' in response and not self.object_response():
             result = {
                 'success': 0,
                 'secure': response['secure']
             }
-        elif response['success']:
+        elif self.object_response():
             result['success'] = 1
         else:
             result = {
@@ -82,10 +81,9 @@ class ApiObject(Paymentwall, Httpaction):
         return result
 
     def create(self, params):
-        # print(self.get_api_url())
-        # print(params)
-        # print(self.get_api_header())
-        print(self.get_api_url())
         http_action = Httpaction(self.get_api_url(), params, self.get_api_header())
         response = http_action.api_request().read()
         self.set_response(self.convert_response(response))
+
+    def object_response(self):
+        return True if self.get_response()['object'] else False

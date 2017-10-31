@@ -190,11 +190,3 @@ class Pingback(Paymentwall):
 		base_string += secret
 
 		return self.hash(base_string, 'sha256') if int(version) == self.SIGNATURE_VERSION_3 else self.hash(base_string, 'md5')
-
-Paymentwall.set_api_type(Paymentwall.API_VC)
-Paymentwall.set_app_key('028e62585a9a21d9aedddcc9d49e0464') # available in your merchant area
-Paymentwall.set_secret_key('c9ce1884821d9a134e6ba6669c1621ce') # available in your merchant area
-test_pingback = Pingback({'uid':'test','currency':100,'ref':'t123123'},'12.123.123.123')
-test_pingback.is_signature_valid()
-
-
